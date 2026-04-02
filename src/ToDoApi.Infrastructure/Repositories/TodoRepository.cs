@@ -24,7 +24,7 @@ public async Task<IEnumerable<Todo>> GetAllAsync()
 {
     return await _context.Todos.ToListAsync();
 }
-
+        
 public async Task<Todo?> GetByIdAsync(int id)
 {
     return await _context.Todos.FindAsync(id);
@@ -36,8 +36,8 @@ public async Task AddAsync(Todo todo)
     await _context.SaveChangesAsync();
 }
 
-public async Task UpdateAsync(Todo todo)
-{
+public async Task UpdateAsync(Todo todo)    
+{   
     _context.Todos.Update(todo);
     await _context.SaveChangesAsync();
 }

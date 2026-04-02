@@ -44,7 +44,7 @@ namespace ToDoApi.Domain.Entities;
         public void Update(string title, string? description)
         {
         if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("Title cannot be empty.");
+            throw new ArgumentException("Title cannot be empty.");  
 
           Title = title;
           Description = description;
