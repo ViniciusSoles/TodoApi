@@ -37,14 +37,14 @@ public class TodosController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<TodoResponseDto>> Create([FromBody] CreateTodoDto dto)
+    public async Task<ActionResult> Create([FromBody] CreateTodoDto dto)
     {
         var created = await _service.CreateAsync(dto);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     [HttpPut("{id}")]
-    public async Task<ActionResult<UpdateTodoDto>> Update(int id, [FromBody] UpdateTodoDto dto)
+    public async Task<ActionResult> Update(int id, [FromBody] UpdateTodoDto dto)
     {
         try
         {
