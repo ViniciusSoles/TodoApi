@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FluentResults;
+using Microsoft.AspNetCore.Mvc;
 using ToDoApi.Application.DTOs;
 using ToDoApi.Application.Interfaces;
 
@@ -19,8 +20,8 @@ public class TodosController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<TodoResponseDto>>> GetAll()
     {
-        var todos = await _service.GetAllAsync();
-        return Ok(todos); 
+        var result = await _service.GetAllAsync();
+        return Ok(result.Value); 
     }
 
 
@@ -29,60 +30,61 @@ public class TodosController : ControllerBase
     [HttpGet("{id}")]
     public async Task<ActionResult<TodoResponseDto>> GetById(int id)
     {
-        var todo = await _service.GetByIdAsync(id);
-        if (todo is null)
-            return NotFound();
+        var result = await _service.GetByIdAsync(id);
+        if (result is null)
+            return NotFound(result.Errors); 
 
-        return Ok(todo);
+
+        return Ok(result.Value);    
+
     }
 
     [HttpPost]
-    public async Task<ActionResult> Create([FromBody] CreateTodoDto dto)
+    public async Task<ActionResult<TodoResponseDto>> Create([FromBody] CreateTodoDto dto)
     {
-        var created = await _service.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
+        var result = await _service.CreateAsync(dto);
+        return CreatedAtAction(nameof(GetById), new { id = result.Value.Id }, result.Value);
     }
+
 
     [HttpPut("{id}")]
     public async Task<ActionResult> Update(int id, [FromBody] UpdateTodoDto dto)
     {
-        try
-        {
-            await _service.UpdateAsync(id, dto);
-            return NoContent();
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+        var result = await _service.UpdateAsync(id, dto);
+
+        if (result.IsFailed)
+            return NotFound(result.Errors);
+
+        return NoContent();
     }
 
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
     {
-        try
-        {
-            await _service.DeleteAsync(id);
-            return NoContent();
-        }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+
+
+        var result = await _service.DeleteAsync(id);
+            
+        if (result.IsFailed)
+            return NotFound(result.Errors);
+
+
+        return NoContent();
     }
 
-    [HttpPatch("{id}/complete")]
-    public async Task<ActionResult> Complete(int id)
-    {
-        try
+        [HttpPatch("{id}/complete")]
+        public async Task<ActionResult> Complete(int id)
         {
-            await _service.CompleteAsync(id);
+            var result = await _service.CompleteAsync(id);
+
+            if (result.IsFailed)
+                return BadRequest(result.Errors);
+
             return NoContent();
         }
-        catch (KeyNotFoundException)
-        {
-            return NotFound();
-        }
+
     }
-}
+
+    
+
 

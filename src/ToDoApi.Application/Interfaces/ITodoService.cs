@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FluentResults;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,10 +10,10 @@ namespace ToDoApi.Application.Interfaces;
 
 public interface ITodoService
 {
-    Task<IEnumerable<TodoResponseDto>> GetAllAsync();
-    Task<TodoResponseDto?> GetByIdAsync(int id);
-    Task<TodoResponseDto> CreateAsync(CreateTodoDto dto);
-    Task UpdateAsync(int id, UpdateTodoDto dto);
-    Task DeleteAsync(int id);
-    Task CompleteAsync(int id);
+    Task<Result<IEnumerable<TodoResponseDto>>> GetAllAsync();
+    Task<Result<TodoResponseDto?>> GetByIdAsync(int id);
+    Task<Result<TodoResponseDto>> CreateAsync(CreateTodoDto dto);
+    Task<Result> UpdateAsync(int id, UpdateTodoDto dto);
+    Task<Result> DeleteAsync(int id);
+    Task<Result> CompleteAsync(int id);
 }
