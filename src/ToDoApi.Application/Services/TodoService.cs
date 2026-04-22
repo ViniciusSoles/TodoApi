@@ -25,14 +25,18 @@ public class TodoService : ITodoService
     public async Task<Result<IEnumerable<TodoResponseDto>>> GetAllAsync()
     {
         var todo = await _repository.GetAllAsync();
-        return Result.Ok(todo.Select(MapToDto));
+        return Result.Ok(todo.ToDtoList());
     }
 
 
     public async Task<Result<TodoResponseDto?>> GetByIdAsync(int id)
     {
         var todo = await _repository.GetByIdAsync(id);
-        return todo is null ? null : MapToDto(todo);
+       
+        if (todo is null)
+            return Result.Fail($"Todo {id} not found.");    
+
+        return Result.Ok(todo.ToDto()); 
     }
 
 
@@ -40,7 +44,7 @@ public class TodoService : ITodoService
     {
         var todo = new Todo(dto.Title, dto.Description);
         await _repository.AddAsync(todo);
-        return Result.Ok(MapToDto(todo));
+        return Result.Ok(todo.ToDto());
 
 
     }
@@ -77,22 +81,16 @@ public class TodoService : ITodoService
         if (todo is null)
             return Result.Fail($"Todo {id} not found.");
 
+        if(todo.IsCompleted)
+            return Result.Fail($"Todo {id} is already completed.");
+
         todo.Complete();
         await _repository.UpdateAsync(todo);
         return Result.Ok();
     }
 
 
-    private static TodoResponseDto MapToDto(Todo todo) => new()
-    {
-        Id = todo.Id,
-        Title = todo.Title,
-        Description = todo.Description,
-        IsCompleted = todo.IsCompleted,
-        CreatedAt = todo.CreatedAt,
-        CompletedAt = todo.CompletedAt
-    };
-
+   
     
 }
 

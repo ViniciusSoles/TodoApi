@@ -1,4 +1,5 @@
     using Microsoft.EntityFrameworkCore;
+using ToDoApi.API.Middlewares;
 using ToDoApi.Application.Interfaces;
 using ToDoApi.Application.Services;
 using ToDoApi.Domain.Interfaces;
@@ -19,10 +20,12 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<ITodoRepository, TodoRepository>();
 builder.Services.AddScoped<ITodoService, TodoService>();
 
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>(); 
+builder.Services.AddProblemDetails();   
+
 var app = builder.Build();
 
-
-
+app.UseExceptionHandler();
 
 
 
