@@ -32,7 +32,12 @@ public class TodosController : ControllerBase
     {
         var result = await _service.GetByIdAsync(id);
         if (result.IsFailed)
-            return NotFound(result.Errors);     
+            return NotFound(new ProblemDetails
+            {
+                Title = "Recurso não encontrado.",
+                Detail = result.Errors.First().Message,
+                Status = 404
+            });     
 
 
         return Ok(result.Value);    

@@ -21,6 +21,25 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddScoped<ITodoRepository, TodoRepository>();
 builder.Services.AddScoped<ITodoService, TodoService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+var secretKey = builder.Configuration["Jwt:SecretKey"]!;
+
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = "JwtBearer";
+})  
+
+
+
+
+
+
+
+
+
 
 
 Log.Logger = new LoggerConfiguration()
@@ -44,8 +63,6 @@ builder.Host.UseSerilog();
 var app = builder.Build();  
 
 app.UseExceptionHandler();
-
-
 app.UseSerilogRequestLogging();
 
 
