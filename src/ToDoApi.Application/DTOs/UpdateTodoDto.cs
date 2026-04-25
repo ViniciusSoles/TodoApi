@@ -10,7 +10,7 @@ namespace ToDoApi.Application.DTOs;
 
 public class UpdateTodoDto
 {
-    [Required(ErrorMessage="O Titulo é Obrigatório")]
+  
     [MaxLength(100, ErrorMessage = "Máximo 100 caracteres.")]
     public string Title { get; set; }
 

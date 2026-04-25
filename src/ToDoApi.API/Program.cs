@@ -1,4 +1,6 @@
     using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.Events;
 using ToDoApi.API.Middlewares;
 using ToDoApi.Application.Interfaces;
 using ToDoApi.Application.Services;
@@ -20,13 +22,31 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddScoped<ITodoRepository, TodoRepository>();
 builder.Services.AddScoped<ITodoService, TodoService>();
 
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>(); 
-builder.Services.AddProblemDetails();   
 
-var app = builder.Build();
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .CreateLogger();
+
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>(); 
+builder.Services.AddProblemDetails();
+
+
+
+
+
+
+builder.Host.UseSerilog();
+
+
+
+
+var app = builder.Build();  
 
 app.UseExceptionHandler();
 
+
+app.UseSerilogRequestLogging();
 
 
 

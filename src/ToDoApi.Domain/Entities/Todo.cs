@@ -48,8 +48,7 @@ namespace ToDoApi.Domain.Entities;
 
           Title = title;
           Description = description;
-          Title = title;
-          Description = description;
+          
         }   
 
 

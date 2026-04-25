@@ -31,8 +31,8 @@ public class TodosController : ControllerBase
     public async Task<ActionResult<TodoResponseDto>> GetById(int id)
     {
         var result = await _service.GetByIdAsync(id);
-        if (result is null)
-            return NotFound(result.Errors); 
+        if (result.IsFailed)
+            return NotFound(result.Errors);     
 
 
         return Ok(result.Value);    
@@ -53,10 +53,16 @@ public class TodosController : ControllerBase
         var result = await _service.UpdateAsync(id, dto);
 
         if (result.IsFailed)
-            return NotFound(result.Errors);
+            return NotFound(new ProblemDetails
+            {
+                Title = "Recurso não encontrado.",
+                Detail = result.Errors.First().Message,
+                Status = 404
+            });
 
-        return NoContent();
+            return NoContent();
     }
+
 
     [HttpDelete("{id}")]
     public async Task<ActionResult> Delete(int id)
@@ -66,7 +72,12 @@ public class TodosController : ControllerBase
         var result = await _service.DeleteAsync(id);
             
         if (result.IsFailed)
-            return NotFound(result.Errors);
+            return NotFound(new ProblemDetails
+            {
+                Title = "Recurso não encontrado.",
+                Detail = result.Errors.First().Message,
+                Status = 404
+                });
 
 
         return NoContent();
@@ -78,7 +89,12 @@ public class TodosController : ControllerBase
             var result = await _service.CompleteAsync(id);
 
             if (result.IsFailed)
-                return BadRequest(result.Errors);
+                return BadRequest(new ProblemDetails
+                {
+                    Title = "Requisição inválida.",
+                    Detail = result.Errors.First().Message,
+                    Status = 400
+                });
 
             return NoContent();
         }
