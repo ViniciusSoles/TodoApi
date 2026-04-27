@@ -1,4 +1,5 @@
 ﻿using FluentResults;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ToDoApi.Application.DTOs;
 using ToDoApi.Application.Interfaces;
@@ -8,6 +9,7 @@ namespace ToDoApi.API.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class TodosController : ControllerBase
 {
     private readonly ITodoService _service;

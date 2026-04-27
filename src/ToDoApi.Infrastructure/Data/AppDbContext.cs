@@ -14,8 +14,10 @@ namespace ToDoApi.Infrastructure.Data;
      public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
       public DbSet<Todo> Todos { get; set; }
+      public DbSet<User> Users { get; set; }
 
-     protected override void OnModelCreating(ModelBuilder modelBuilder)
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
      {
         modelBuilder.Entity<Todo>(entity =>
         {
@@ -31,6 +33,64 @@ namespace ToDoApi.Infrastructure.Data;
             entity.Property(t => t.CreatedAt)
                 .IsRequired();
         });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+
+            entity.HasKey(u => u.Id);
+
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.HasKey(u => u.Id);
+
+                entity.Property(u => u.Name)
+                    .IsRequired()
+                    .HasMaxLength(100);
+
+                entity.Property(u => u.Email)
+                    .IsRequired()
+                    .HasMaxLength(150);
+
+                entity.Property(u => u.PasswordHash)
+                    .IsRequired();
+
+                entity.HasIndex(u => u.Email)
+                    .IsUnique();
+            
+                entity.Property(u => u.Role)
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasDefaultValue("User");
+
+
+
+
+            });
+
+
+
+
+
+
+
+
+
+
+
+        });
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
     }
 }
 

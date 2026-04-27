@@ -3,10 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ToDoApi.Domain.Entities;
 
-namespace ToDoApi.Domain.Interfaces
+namespace ToDoApi.Domain.Interfaces;
+
+public interface IUserRepository
 {
-    internal class IUser
-    {
-    }
+
+    Task<User?> GetByEmailAsync(string email);
+    Task<bool> EmailExistsAsync(string email);
+    Task AddAsync(User user);
+
 }
+
