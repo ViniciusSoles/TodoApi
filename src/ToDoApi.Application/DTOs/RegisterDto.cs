@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ToDoApi.Domain.Constants;
 
 namespace ToDoApi.Application.DTOs;
 
@@ -22,9 +23,8 @@ namespace ToDoApi.Application.DTOs;
         [Required(ErrorMessage = "A Senha é Obrigatória.")]
         [MinLength(8, ErrorMessage = "A senha deve conter no mínimo 8 caracteres.")]    
         public string Password { get; set; }
-    
- 
-        public string Role { get; set; } = "User";  
+
+
 
 
 }

@@ -125,11 +125,23 @@ app.UseSerilogRequestLogging();
 
 
 // Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHsts();
+    app.UseHttpsRedirection();
+
+}
+
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+}   
+
+
+
+
+
 
 app.UseHttpsRedirection();
 

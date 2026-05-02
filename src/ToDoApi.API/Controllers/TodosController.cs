@@ -6,10 +6,10 @@ using ToDoApi.Application.Interfaces;
 
 namespace ToDoApi.API.Controllers;
 
-
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+
 public class TodosController : ControllerBase
 {
     private readonly ITodoService _service;

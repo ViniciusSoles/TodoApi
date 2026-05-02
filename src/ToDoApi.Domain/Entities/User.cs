@@ -13,8 +13,10 @@ namespace ToDoApi.Domain.Entities;
       public string Name { get; private set; }
       public string Email { get; private set; }
       public string PasswordHash { get; private set; }
+      public string Role { get; private set; }
+      public string? RefreshToken { get; private set; }           
+      public DateTime? RefreshTokenExpiresAt { get; private set; }
 
-      public string Role { get; private set; }   
 
     protected User() { }
 
@@ -33,10 +35,37 @@ namespace ToDoApi.Domain.Entities;
 
     }
 
-
-
-
-
-
+    public void SetRefreshToken(string token, DateTime expiresAt)
+    {
+        RefreshToken = token;
+        RefreshTokenExpiresAt = expiresAt;
     }
+
+    public void RevokeRefreshToken()  // ← adiciona esse
+    {
+        RefreshToken = null;
+        RefreshTokenExpiresAt = null;
+    }
+
+    public bool IsRefreshTokenValid(string token) =>
+        RefreshToken == token &&
+        RefreshTokenExpiresAt > DateTime.UtcNow;
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

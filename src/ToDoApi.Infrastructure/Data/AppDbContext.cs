@@ -62,6 +62,11 @@ namespace ToDoApi.Infrastructure.Data;
                     .HasMaxLength(20)
                     .HasDefaultValue("User");
 
+                entity.Property(u => u.RefreshToken)
+                    .HasMaxLength(250);
+
+                entity.Property(u => u.RefreshTokenExpiresAt);
+                  
 
 
 

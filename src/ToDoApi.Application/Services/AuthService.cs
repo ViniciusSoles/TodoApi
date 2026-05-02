@@ -25,22 +25,15 @@ public class AuthService : IAuthService
 
     public async Task<Result<TokenResponseDto>> RegisterAsync(RegisterDto dto)
     {
-        // verifica se email já existe
         if (await _repository.EmailExistsAsync(dto.Email))
             return Result.Fail("Email já cadastrado.");
 
-        if (dto.Role != Roles.Admin && dto.Role != Roles.User)
-            return Result.Fail("Role inválida. Deve ser 'User' ou 'Admin'.");   
-
-        // gera o hash da senha
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
-
-        var user = new User(dto.Name, dto.Email, passwordHash);
+        var user = new User(dto.Name, dto.Email, passwordHash, Roles.User); // ← sempre User
         await _repository.AddAsync(user);
 
         return Result.Ok(GenerateToken(user));
     }
-
     public async Task<Result<TokenResponseDto>> LoginAsync(LoginDto dto)
     {
         var user = await _repository.GetByEmailAsync(dto.Email);
@@ -55,7 +48,7 @@ public class AuthService : IAuthService
         return Result.Ok(GenerateToken(user));
     }
 
-    private TokenResponseDto GenerateToken(User user)
+    private TokenResponseDto GenerateAccessToken(User user)
     {
         var secretKey = _configuration["Jwt:SecretKey"]!;
         var issuer = _configuration["Jwt:Issuer"]!;
@@ -71,7 +64,7 @@ public class AuthService : IAuthService
             new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Name, user.Name),
-            new Claim(ClaimTypes.Role, user.Role)   
+            new Claim(ClaimTypes.Role, user.Role)
         };
 
         var token = new JwtSecurityToken(
@@ -84,9 +77,63 @@ public class AuthService : IAuthService
 
         return new TokenResponseDto
         {
-            Token = new JwtSecurityTokenHandler().WriteToken(token),
-            ExpiresAt = DateTime.UtcNow.AddMinutes(expiration)
+            AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
+            AccessTokenExpiresAt = DateTime.UtcNow.AddMinutes(expiration)
         };
+
+    }
+
+    private static string GenerateRefreshToken()
+    {
+        
+        return Convert.ToBase64String(
+        System.Security.Cryptography.RandomNumberGenerator.GetBytes(64));
+    }
+
+    public async Task<Result> RevokeAsync(string refreshToken)
+    {
+        var user = await _repository.GetByRefreshTokenAsync(refreshToken);
+
+        if (user is null)
+            return Result.Fail("Refresh token inválido.");
+
+        user.RevokeRefreshToken();
+        await _repository.UpdateAsync(user);
+        return Result.Ok();
+    }
+
+
+    public async Task<Result<TokenResponseDto>> RefreshAsync(string refreshToken)
+    {
+        var user = await _repository.GetByRefreshTokenAsync(refreshToken);
+
+        if (user is null || !user.IsRefreshTokenValid(refreshToken))
+            return Result.Fail("Refresh token inválido ou expirado.");
+
+        return Result.Ok();
+    }
+
+    public async Task<Result> GenerateTokens(string refreshToken)
+    {
+       
+        var accessToken = GenerateAccessToken(user);
+        var refreshToken = GenerateRefreshToken();
+        var refreshExpiry = DateTime.UtcNow.AddDays(
+            int.Parse(_configuration["Jwt:RefreshTokenExpirationDays"]!));
+
+        user.SetRefreshToken(refreshToken, refreshExpiry);
+        await _repository.UpdateAsync(user);
+
+        return new TokenResponseDto
+        {
+            AccessToken = accessToken,
+            RefreshToken = refreshToken,
+            AccessTokenExpiresAt = DateTime.UtcNow.AddMinutes(
+                int.Parse(_configuration["Jwt:AccessTokenExpirationMinutes"]!)),
+            RefreshTokenExpiresAt = refreshExpiry
+        };
+
     }
 }
+
 
