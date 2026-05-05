@@ -1,17 +1,9 @@
-﻿using Azure.Core;
+﻿using FluentResults;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Win32;
-using Serilog;
+using System.Security.Cryptography;
 using ToDoApi.Application.DTOs;
 using ToDoApi.Application.Interfaces;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
-using static System.Net.Mime.MediaTypeNames;
-
 namespace ToDoApi.API.Controllers;
 
 public class AuthController : ControllerBase
@@ -52,13 +44,43 @@ public class AuthController : ControllerBase
                 Status = StatusCodes.Status401Unauthorized
             });
 
-        return Ok(result.Value);
+        SetRefreshTokenCookie(result.Value.RefreshToken, result.Value.RefreshTokenExpiresAt);
+
+        return Ok(new
+        {
+            result.Value.AccessToken,
+            result.Value.AccessTokenExpiresAt
+        });
+    }
+
+
+    private void SetRefreshTokenCookie(string refreshToken, DateTime expiresAt)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,  
+            Secure = true,  
+            SameSite = SameSiteMode.Strict, 
+            Expires = expiresAt
+        };
+
+        Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
     }
 
 
     [HttpPost("refresh")]
-    public async Task<ActionResult<TokenResponseDto>> Refresh([FromBody] string refreshToken)
+    public async Task<ActionResult<TokenResponseDto>> Refresh()
     {
+  
+        var refreshToken = Request.Cookies["refreshToken"];
+
+        if (string.IsNullOrEmpty(refreshToken))
+            return Unauthorized(new ProblemDetails
+            {
+                Title = "Refresh token não encontrado.",
+                Status = 401
+            });
+
         var result = await _service.RefreshAsync(refreshToken);
 
         if (result.IsFailed)
@@ -66,16 +88,34 @@ public class AuthController : ControllerBase
             {
                 Title = "Token inválido.",
                 Detail = result.Errors.First().Message,
-                Status = StatusCodes.Status401Unauthorized
+                Status = 401
             });
 
-        return Ok(result.Value);
+        SetRefreshTokenCookie(result.Value.RefreshToken, result.Value.RefreshTokenExpiresAt);
+
+        return Ok(new
+        {
+            result.Value.AccessToken,
+            result.Value.AccessTokenExpiresAt
+        });
     }
+
+
 
     [HttpPost("revoke")]
     [Authorize]
-    public async Task<ActionResult> Revoke([FromBody] string refreshToken)
+    public async Task<ActionResult> Revoke()
     {
+       
+        var refreshToken = Request.Cookies["refreshToken"];
+
+        if (string.IsNullOrEmpty(refreshToken))
+            return BadRequest(new ProblemDetails
+            {
+                Title = "Refresh token não encontrado.",
+                Status = StatusCodes.Status400BadRequest
+            });
+
         var result = await _service.RevokeAsync(refreshToken);
 
         if (result.IsFailed)
@@ -86,6 +126,12 @@ public class AuthController : ControllerBase
                 Status = StatusCodes.Status400BadRequest
             });
 
-        return NoContent();
+      
+        Response.Cookies.Delete("refreshToken");
+
+        return NoContent(); 
     }
+
+
 }
+

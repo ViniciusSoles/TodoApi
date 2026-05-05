@@ -32,8 +32,9 @@ public class AuthService : IAuthService
         var user = new User(dto.Name, dto.Email, passwordHash, Roles.User); // ← sempre User
         await _repository.AddAsync(user);
 
-        return Result.Ok(GenerateToken(user));
+        return Result.Ok(await GenerateTokens(user));
     }
+
     public async Task<Result<TokenResponseDto>> LoginAsync(LoginDto dto)
     {
         var user = await _repository.GetByEmailAsync(dto.Email);
@@ -45,27 +46,26 @@ public class AuthService : IAuthService
         if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return Result.Fail("Credenciais inválidas.");
 
-        return Result.Ok(GenerateToken(user));
+        return Result.Ok(await GenerateTokens(user));
     }
 
-    private TokenResponseDto GenerateAccessToken(User user)
+    private string GenerateAccessToken(User user)
     {
         var secretKey = _configuration["Jwt:SecretKey"]!;
         var issuer = _configuration["Jwt:Issuer"]!;
         var audience = _configuration["Jwt:Audience"]!;
-        var expiration = int.Parse(_configuration["Jwt:ExpirationMinutes"]!);
+        var expiration = int.Parse(_configuration["Jwt:AccessTokenExpirationMinutes"]!);
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-        // claims — o que vai dentro do token
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-            new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Name, user.Name),
-            new Claim(ClaimTypes.Role, user.Role)
-        };
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim(ClaimTypes.Name, user.Name),
+        new Claim(ClaimTypes.Role, user.Role)
+    };
 
         var token = new JwtSecurityToken(
             issuer: issuer,
@@ -75,24 +75,20 @@ public class AuthService : IAuthService
             signingCredentials: creds
         );
 
-        return new TokenResponseDto
-        {
-            AccessToken = new JwtSecurityTokenHandler().WriteToken(token),
-            AccessTokenExpiresAt = DateTime.UtcNow.AddMinutes(expiration)
-        };
-
+        return new JwtSecurityTokenHandler().WriteToken(token); // ← só a string
     }
 
     private static string GenerateRefreshToken()
     {
-        
+
         return Convert.ToBase64String(
         System.Security.Cryptography.RandomNumberGenerator.GetBytes(64));
     }
 
     public async Task<Result> RevokeAsync(string refreshToken)
     {
-        var user = await _repository.GetByRefreshTokenAsync(refreshToken);
+        var refreshHash = HashToken(refreshToken);
+        var user = await _repository.GetByRefreshTokenAsync(refreshHash);
 
         if (user is null)
             return Result.Fail("Refresh token inválido.");
@@ -102,38 +98,49 @@ public class AuthService : IAuthService
         return Result.Ok();
     }
 
-
     public async Task<Result<TokenResponseDto>> RefreshAsync(string refreshToken)
     {
-        var user = await _repository.GetByRefreshTokenAsync(refreshToken);
+        var refreshHash = HashToken(refreshToken); 
+        var user = await _repository.GetByRefreshTokenAsync(refreshHash);
 
-        if (user is null || !user.IsRefreshTokenValid(refreshToken))
+        if (user is null || !user.IsRefreshTokenValid(refreshHash))
             return Result.Fail("Refresh token inválido ou expirado.");
 
-        return Result.Ok();
+        var tokens = await GenerateTokens(user);
+            return Result.Ok(tokens);
     }
 
-    public async Task<Result> GenerateTokens(string refreshToken)
+    public async Task<TokenResponseDto> GenerateTokens(User user)
     {
-       
+
         var accessToken = GenerateAccessToken(user);
-        var refreshToken = GenerateRefreshToken();
+        var refreshToken = GenerateRefreshToken(); 
+        var refreshHash = HashToken(refreshToken); 
         var refreshExpiry = DateTime.UtcNow.AddDays(
             int.Parse(_configuration["Jwt:RefreshTokenExpirationDays"]!));
 
-        user.SetRefreshToken(refreshToken, refreshExpiry);
+        user.SetRefreshToken(refreshHash, refreshExpiry); 
         await _repository.UpdateAsync(user);
 
         return new TokenResponseDto
         {
             AccessToken = accessToken,
-            RefreshToken = refreshToken,
+            RefreshToken = refreshToken, 
             AccessTokenExpiresAt = DateTime.UtcNow.AddMinutes(
                 int.Parse(_configuration["Jwt:AccessTokenExpirationMinutes"]!)),
             RefreshTokenExpiresAt = refreshExpiry
         };
-
     }
+
+   
+    private static string HashToken(string token)
+    {
+        var bytes = System.Security.Cryptography.SHA256.HashData(Encoding.UTF8.GetBytes(token));
+        return Convert.ToBase64String(bytes);
+    }
+
+
 }
+
 
 
