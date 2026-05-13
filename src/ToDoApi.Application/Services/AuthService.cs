@@ -23,7 +23,7 @@ public class AuthService : IAuthService
         _configuration = configuration;
     }
 
-    public async Task<Result<TokenResponseDto>> RegisterAsync(RegisterDto dto)
+    public async Task<Result> RegisterAsync(RegisterDto dto)
     {
         if (await _repository.EmailExistsAsync(dto.Email))
             return Result.Fail("Email já cadastrado.");
@@ -32,7 +32,7 @@ public class AuthService : IAuthService
         var user = new User(dto.Name, dto.Email, passwordHash, Roles.User); // ← sempre User
         await _repository.AddAsync(user);
 
-        return Result.Ok(await GenerateTokens(user));
+        return Result.Ok();
     }
 
     public async Task<Result<TokenResponseDto>> LoginAsync(LoginDto dto)
@@ -42,7 +42,7 @@ public class AuthService : IAuthService
         if (user is null)
             return Result.Fail("Credenciais inválidas.");
 
-        // valida a senha
+        
         if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash))
             return Result.Fail("Credenciais inválidas.");
 
@@ -75,7 +75,7 @@ public class AuthService : IAuthService
             signingCredentials: creds
         );
 
-        return new JwtSecurityTokenHandler().WriteToken(token); // ← só a string
+        return new JwtSecurityTokenHandler().WriteToken(token); 
     }
 
     private static string GenerateRefreshToken()

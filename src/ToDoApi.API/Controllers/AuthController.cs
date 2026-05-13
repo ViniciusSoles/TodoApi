@@ -16,7 +16,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<ActionResult<TokenResponseDto>> Register([FromBody] RegisterDto dto)
+    public async Task<ActionResult> Register([FromBody] RegisterDto dto)
     {
         var result = await _service.RegisterAsync(dto);
 
@@ -28,7 +28,7 @@ public class AuthController : ControllerBase
                 Status = StatusCodes.Status400BadRequest
             });
 
-        return Ok(result.Value);
+        return Created("/auth/login",new { message="Cadastro Realizado.Faça Login para continuar"});
     }
 
     [HttpPost("login")]

@@ -11,7 +11,7 @@ namespace ToDoApi.Application.Interfaces;
 
 public interface IAuthService
 {
-    Task<Result<TokenResponseDto>> RegisterAsync(RegisterDto dto);
+    Task<Result> RegisterAsync(RegisterDto dto);
     Task<Result<TokenResponseDto>> LoginAsync(LoginDto dto);
     Task<Result> RevokeAsync(string refreshToken);  
     Task<Result<TokenResponseDto>> RefreshAsync(string refreshToken);
