@@ -2,7 +2,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Cryptography;
-using ToDoApi.Application.DTOs;
+using ToDoApi.Application.DTOs.AuthDtos;
+using ToDoApi.Application.DTOs.TodoDtos;
 using ToDoApi.Application.Interfaces;
 namespace ToDoApi.API.Controllers;
 

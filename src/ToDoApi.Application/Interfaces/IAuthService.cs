@@ -4,7 +4,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ToDoApi.Application.DTOs;
+using ToDoApi.Application.DTOs.AuthDtos;
+using ToDoApi.Application.DTOs.TodoDtos;
 using ToDoApi.Domain.Entities;
 
 namespace ToDoApi.Application.Interfaces;

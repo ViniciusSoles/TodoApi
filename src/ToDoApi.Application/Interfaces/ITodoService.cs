@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ToDoApi.Application.DTOs;
+using ToDoApi.Application.DTOs.TodoDtos;
+using ToDoApi.Domain.Shared;
 
 namespace ToDoApi.Application.Interfaces;
 
@@ -16,4 +18,8 @@ public interface ITodoService
     Task<Result> UpdateAsync(int id, UpdateTodoDto dto);
     Task<Result> DeleteAsync(int id);
     Task<Result> CompleteAsync(int id);
+
+    Task<Result<PagedResult<TodoResponseDto>>> GetPaginationAsync(PaginationParams pagination);
+
+
 }

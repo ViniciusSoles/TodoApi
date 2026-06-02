@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ToDoApi.Application.DTOs;
+namespace ToDoApi.Application.DTOs.AuthDtos;
 
 public class TokenResponseDto
 {

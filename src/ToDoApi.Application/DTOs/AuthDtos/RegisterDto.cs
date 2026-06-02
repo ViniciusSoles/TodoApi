@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ToDoApi.Domain.Constants;
 
-namespace ToDoApi.Application.DTOs;
+namespace ToDoApi.Application.DTOs.AuthDtos;
 
     public class RegisterDto
     {

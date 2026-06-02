@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ToDoApi.Application.DTOs;
+using ToDoApi.Application.DTOs.TodoDtos;
 using ToDoApi.Application.Services;
 using ToDoApi.Domain.Entities;  
 using ToDoApi.Domain.Interfaces;
@@ -113,14 +114,6 @@ namespace ToDoApi.Tests;
         result.IsSuccess.Should().BeTrue();
         await _repository.Received(1).UpdateAsync(Arg.Any<Todo>());
     }
-
-
-
-
-
-
-
-
 
 }
 

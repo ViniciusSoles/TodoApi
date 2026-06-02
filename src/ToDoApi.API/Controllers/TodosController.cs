@@ -2,7 +2,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using ToDoApi.Application.DTOs;
+using ToDoApi.Application.DTOs.TodoDtos;
 using ToDoApi.Application.Interfaces;
+using ToDoApi.Domain.Shared;
 
 namespace ToDoApi.API.Controllers;
 
@@ -105,8 +107,39 @@ public class TodosController : ControllerBase
 
             return NoContent();
         }
+    
+    [HttpGet("paged")]
+    public async Task<ActionResult<PagedResult<TodoResponseDto>>> GetPagination(
+    [FromQuery] int page = 1,
+    [FromQuery] int pageSize = 10)
+    {
+        var pagination = new PaginationParams();
+        pagination.Page = page;
+        pagination.PageSize = pageSize;
 
+
+        
+        
+       
+
+        var result = await _service.GetPaginationAsync(pagination);
+        
+        return Ok(result.Value);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+}
 
     
 

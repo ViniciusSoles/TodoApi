@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ToDoApi.Domain.Entities;
 
-namespace ToDoApi.Application.DTOs;
+namespace ToDoApi.Application.DTOs.TodoDtos;
 
 public static class TodoMappingExtensions
 {

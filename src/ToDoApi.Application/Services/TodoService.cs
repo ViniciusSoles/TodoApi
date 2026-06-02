@@ -5,9 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ToDoApi.Application.DTOs;
+using ToDoApi.Application.DTOs.TodoDtos;
 using ToDoApi.Application.Interfaces;
 using ToDoApi.Domain.Entities;
 using ToDoApi.Domain.Interfaces;
+using ToDoApi.Domain.Shared;
 
 namespace ToDoApi.Application.Services;
 
@@ -89,10 +91,28 @@ public class TodoService : ITodoService
         return Result.Ok();
     }
 
+  
 
-   
-    
+    public async Task<Result<PagedResult<TodoResponseDto>>> GetPaginationAsync(PaginationParams pagination)
+    {
+        var(items, total) = await _repository.GetPaginationAsync(pagination);
+
+        var result = new PagedResult<TodoResponseDto>
+        {
+            Data = items.ToDtoList(),
+            Page = pagination.Page,
+            PageSize = pagination.PageSize,
+            TotalItems = total,
+            TotalPages = (int)Math.Ceiling(total / (double)pagination.PageSize)
+        };
+
+        return Result.Ok(result);
+
+
+    }
 }
+
+
 
 
 
